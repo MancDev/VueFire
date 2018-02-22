@@ -1,0 +1,150 @@
+<html>
+
+    <head>
+        <title>VueFire</title>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/semantic-ui/2.2/semantic.min.css">
+    </head>
+
+    <body>
+
+        <div id="app">
+
+            <div id="container" v-bind:style="appMargin">
+
+                <h1>{{title}}</h1>
+
+                <div class="ui fluid labeled input">
+                    <label class="ui label">First Name</label>
+                    <input type="text" placeholder="First Name " v-model="firstName">
+                </div>
+                <div class="ui fluid labeled input">
+                    <label class="ui label">Last Name</label>
+                    <input type="text" placeholder="Last Name " v-model="lastName">
+                </div>
+                <div class="ui fluid labeled input">
+                    <label class="ui label">Job Title</label>
+                    <input type="text" placeholder="Job Title  " v-model="jobTitle">
+                </div>
+                <div class="ui fluid labeled input">
+                    <label class="ui label">Department</label>
+                    <input type="text" placeholder="Department" v-model="dept">
+                </div>
+                <div v-bind:style="buttonMargin">
+                    <button class="ui primary button" v-on:click="saveEmployee()">Save</button>
+                </div>
+
+            </div>
+
+            <div v-bind:style="tableMargin">
+
+                <table class="ui table">
+                    <thead>
+                        <th>Employee Name</th>
+                        <th>Job Title</th>
+                        <th>Department</th>
+                    </thead>
+                    <tbody>
+                        <tr v-for="employee in employees">
+                            <td>{{employee.firstName + ' ' + employee.lastName}}</td>
+                            <td>{{employee.jobTitle}}</td>
+                            <td>{{employee.dept}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+
+            </div>
+
+        </div>
+
+
+    </body>
+
+    <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase-firestore.js"></script>
+    <script>
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyA0KlHuISpQL1F0XMWv1FfmtbaJQmPKwqQ",
+        authDomain: "vuefire-da3bf.firebaseapp.com",
+        databaseURL: "https://vuefire-da3bf.firebaseio.com",
+        projectId: "vuefire-da3bf",
+        storageBucket: "vuefire-da3bf.appspot.com",
+        messagingSenderId: "1094070580435"
+    };
+    firebase.initializeApp(config);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+    <script>
+        var app = new Vue({
+           el : "#app",
+           data : {
+               title : 'EmployeeMagic',
+               id : "",
+               firstName : "",
+               lastName : "", 
+               jobTitle : "",
+               dept : "",
+               db : {},
+               employees : [],
+               appMargin : {
+                   "margin" : "20px"
+               },
+               tableMargin : {
+                   "margin" : "20px",
+                   "margin-top":"25px"
+               },
+               buttonMargin : {
+                   "margin-top" : "10px"
+               }
+            },
+            methods : {
+                saveEmployee : function() {
+                    var saveObject = {
+                        "FirstName" : this.firstName,
+                        "LastName" : this.lastName,
+                        "JobTitle" : this.jobTitle,
+                        "Department" : this.dept
+                    }
+
+                    this.db.collection('Employees').add(saveObject)
+                    .then(() => {
+                        console.log('Saved ' + app.firstName + ' ' + app.lastName + ' OK!');
+                        app.id = "";
+                        app.firstName = "";
+                        app.lastName = ""; 
+                        app.jobTitle = "";
+                        app.dept = "";                          
+                    })
+                    .catch(() => {
+                        console.log('Problem saving ' + app.firstName + ' ' + app.lastName);
+                    })
+                }
+            },
+            created : function() {
+                this.db = firebase.firestore(); 
+
+                var query = this.db.collection("Employees");
+
+                query.onSnapshot(snapshot => {
+                    app.employees = [];
+                    snapshot.forEach(doc => {
+                        var employee = {
+                            id : doc.id,
+                            firstName : doc.data().FirstName,
+                            lastName : doc.data().LastName,
+                            jobTitle : doc.data().JobTitle,
+                            dept : doc.data().Department
+                        };
+                        app.employees.push(employee);
+                    })
+                })
+            }
+        })
+    </script>
+
+
+</html>

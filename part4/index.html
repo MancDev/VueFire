@@ -1,0 +1,174 @@
+<html>
+
+	<head>
+        <title>VueJS &amp; Firebase From Scratch</title>
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"/>
+	</head>
+
+	<body>
+
+        <div id='app'>
+    
+            <div v-bind:style='mainStyle'>
+
+                <h1>{{ appTitle }}</h1>
+
+                <label>First Name</label>
+                <input type='text' v-model='employee.firstName'></br>
+
+                <label>Last Name</label>
+                <input type='text' v-model='employee.lastName'></br>
+
+                <label>Job Title</label>
+                <input type='text' v-model='employee.jobTitle'></br>
+
+                <label>Dept.</label>
+                <input type='text' v-model='employee.dept'></br>
+
+                <label>Age</label>
+                <input type='number' v-model:number='employee.age'></br>
+
+                <button v-on:click="saveEmployee()">Save</button>
+                <button v-if="employee.id" v-on:click="clearEmployee()">Add</button>
+
+                <div :style="tableStyle">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <th>Name</th>
+                            <th>Job Title</th>
+                            <th>Department</th>
+                            <th>Age</th>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(employee, idx) in employees">
+                                <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+                                <td>{{ employee.jobTitle }}</td>
+                                <td>{{ employee.dept }}</td>
+                                <td>{{ employee.age }}                                     
+                                    <button v-on:click="editEmployee(idx)" class="badge badge-primary">Edit</button>                                                                
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+    
+        </div>
+    
+    </body>
+
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-firestore.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyA0KlHuISpQL1F0XMWv1FfmtbaJQmPKwqQ",
+            authDomain: "vuefire-da3bf.firebaseapp.com",
+            databaseURL: "https://vuefire-da3bf.firebaseio.com",
+            projectId: "vuefire-da3bf",
+            storageBucket: "vuefire-da3bf.appspot.com",
+            messagingSenderId: "1094070580435"
+        };
+        firebase.initializeApp(config);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+	<script>
+        var app = new Vue({
+            el : '#app',
+            data : {
+                    appTitle : 'EmployeeMagic',
+                    mainStyle : {'margin' : '20px'},
+                    tableStyle : {'margin-top' : '20px'},
+                    employee : { firstName : '',
+                                    lastName : '',
+                                    jobTitle : '',
+                                    dept : '',
+                                    age : 0,
+                                    id : '' },
+                    db : {},
+                    employees : []
+            },		
+            methods : { 
+                saveEmployee : () => {
+                    if ((app.employee.firstName) && (app.employee.lastName)) {
+                        let saveEmp = {
+                            firstName : app.employee.firstName,
+                            lastName : app.employee.lastName,
+                            jobTitle : app.employee.jobTitle,
+                            dept : app.employee.dept,
+                            age : app.employee.age
+                        }
+                        if (! app.employee.id)
+                            app.db.collection('Employees').add(saveEmp)
+                            .then(() => {
+                                app.clearEmployee()
+                            })
+                            .catch(() => {
+                                console.log('Error saving employee ' + app.employee.firstName + ' ' + app.employee.lastName)
+                            })
+                        else {
+                            let docRef = app.db.collection('Employees').doc(app.employee.id)
+                            docRef.set(saveEmp)
+                            .then(() => {
+                                app.clearEmployee()
+                            })
+                            .catch(() => {
+                                console.log('Error updating employee ' + app.employee.firstName + ' ' + app.employee.lastName)
+                            })
+                        }
+                    }
+                    else
+                        alert('You must enter both a first and last name to save.')
+                },
+                editEmployee : (idx) => {
+                    let emp = app.employees[idx]
+                    if (emp) {
+                        app.employee = {
+                            id : emp.id,
+                            firstName : emp.firstName,
+                            lastName : emp.lastName,
+                            jobTitle : emp.jobTitle,
+                            dept : emp.dept,
+                            age : emp.age                           
+                        }                    
+                    }    
+                },
+                clearEmployee : function() {
+                    app.employee = { firstName : '',
+                                     lastName : '',
+                                     jobTitle : '',
+                                     dept : '',
+                                     age : 0,
+                                     id : '' }
+                }
+            },
+            created : function() {
+                let that = this
+
+                that.db = firebase.firestore()	
+                
+                let query = that.db.collection('Employees')
+                query.onSnapshot((snapshot) => {
+                    that.employees = []
+                    snapshot.forEach((doc) => {
+                        that.employees.push({
+                            id : doc.id,
+                            firstName : doc.data().firstName,
+                            lastName : doc.data().lastName,
+                            jobTitle : doc.data().jobTitle,
+                            dept : doc.data().dept,
+                            age : doc.data().age
+                        })
+                    })
+                })
+
+
+            }
+        })
+    </script>
+
+</html>

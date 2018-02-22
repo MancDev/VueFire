@@ -1,0 +1,99 @@
+<html>
+
+	<head>
+        <title>VueJS &amp; Firebase From Scratch</title>
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"/>
+	</head>
+
+	<body>
+
+        <div id='app'>
+    
+            <div v-bind:style='mainStyle'>
+
+                <h1>{{ appTitle }}</h1>
+
+                <label>First Name</label>
+                <input type='text' v-model='employee.firstName'></br>
+
+                <label>Last Name</label>
+                <input type='text' v-model='employee.lastName'></br>
+
+                <label>Job Title</label>
+                <input type='text' v-model='employee.jobTitle'></br>
+
+                <label>Dept.</label>
+                <input type='text' v-model='employee.dept'></br>
+
+                <label>Age</label>
+                <input type='number' v-model:number='employee.age'></br>
+
+                <button v-on:click="saveEmployee()">Save</button>                
+
+            </div>
+    
+        </div>
+    
+    </body>
+
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-firestore.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyA0KlHuISpQL1F0XMWv1FfmtbaJQmPKwqQ",
+            authDomain: "vuefire-da3bf.firebaseapp.com",
+            databaseURL: "https://vuefire-da3bf.firebaseio.com",
+            projectId: "vuefire-da3bf",
+            storageBucket: "vuefire-da3bf.appspot.com",
+            messagingSenderId: "1094070580435"
+        };
+        firebase.initializeApp(config);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+	<script>
+        var app = new Vue({
+            el : '#app',
+            data : {
+                    appTitle : 'EmployeeMagic',
+                    mainStyle : {'margin' : '20px'},                    
+                    employee : { firstName : '',
+                                    lastName : '',
+                                    jobTitle : '',
+                                    dept : '',
+                                    age : 0},
+                    db : {}
+            },		
+            methods : { 
+                saveEmployee : () => {
+                    if ((app.employee.firstName) && (app.employee.lastName)) {                        
+                        app.db.collection('Employees').add(app.employee)
+                        .then(() => {
+                            app.clearEmployee()
+                        })
+                        .catch(() => {
+                            console.log('Error saving employee ' + app.employee.firstName + ' ' + app.employee.lastName)
+                        })                        
+                    }
+                    else
+                        alert('You must enter both a first and last name to save.')
+                },                
+                clearEmployee : function() {
+                    app.employee = { firstName : '',
+                                     lastName : '',
+                                     jobTitle : '',
+                                     dept : '',
+                                     age : 0,
+                                     id : '' }
+                }
+            },
+            created : function() {
+                this.db = firebase.firestore()                             
+            }
+        })
+    </script>
+
+</html>
