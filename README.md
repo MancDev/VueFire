@@ -16,3 +16,6 @@ https://mancdev.tumblr.com/post/171127030644/vuejs-firestore-stripped-back-tutor
 
 Part 5 : Deleting data  
 https://mancdev.tumblr.com/post/171162489499/vuejs-firestore-stripped-back-tutorial-part-5
+
+Part 6 : Sorting data
+https://mancdev.tumblr.com/post/171347133269/vuejs-firestore-stripped-back-tutorial-part-6
